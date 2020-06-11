@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   Image,
   KeyboardAvoidingView,
@@ -7,6 +7,8 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  Text,
+  ActivityIndicator,
 } from 'react-native';
 
 import * as Yup from 'yup';
@@ -40,6 +42,8 @@ interface SignInFormData {
 }
 
 const SignIn: React.FC<FormHandles> = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+
   const formRef = useRef<FormHandles>(null);
   const passwordInputRef = useRef<TextInput>(null);
   const navigation = useNavigation();
@@ -50,6 +54,7 @@ const SignIn: React.FC<FormHandles> = () => {
     async (data: SignInFormData) => {
       try {
         formRef.current?.setErrors({});
+        setLoading(true);
 
         const schema = Yup.object().shape({
           email: Yup.string()
@@ -66,6 +71,7 @@ const SignIn: React.FC<FormHandles> = () => {
           email: data.email,
           password: data.password,
         });
+        setLoading(false);
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
           const errors = getValidationErrors(err);
@@ -80,6 +86,7 @@ const SignIn: React.FC<FormHandles> = () => {
           'Ocorreu um erro ao fazer o login, cheque as crendeciais',
         );
       }
+      setLoading(false);
     },
     [signIn],
   );
@@ -100,41 +107,46 @@ const SignIn: React.FC<FormHandles> = () => {
             <View>
               <Title>Faça seu Logon</Title>
             </View>
+            {loading ? (
+              <ActivityIndicator size="large" color="#ff9000" />
+            ) : (
+              <>
+                <Form ref={formRef} onSubmit={handleSignIn}>
+                  <Input
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    name="email"
+                    icon="mail"
+                    placeholder="E-mail"
+                    returnKeyType="next"
+                    onSubmitEditing={() => {
+                      passwordInputRef.current?.focus();
+                    }}
+                  />
 
-            <Form ref={formRef} onSubmit={handleSignIn}>
-              <Input
-                autoCorrect={false}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                name="email"
-                icon="mail"
-                placeholder="E-mail"
-                returnKeyType="next"
-                onSubmitEditing={() => {
-                  passwordInputRef.current?.focus();
-                }}
-              />
+                  <Input
+                    ref={passwordInputRef}
+                    name="password"
+                    icon="lock"
+                    placeholder="Senha"
+                    secureTextEntry
+                    returnKeyType="send"
+                    onSubmitEditing={() => {
+                      formRef.current?.submitForm();
+                    }}
+                  />
 
-              <Input
-                ref={passwordInputRef}
-                name="password"
-                icon="lock"
-                placeholder="Senha"
-                secureTextEntry
-                returnKeyType="send"
-                onSubmitEditing={() => {
-                  formRef.current?.submitForm();
-                }}
-              />
-
-              <Button
-                onPress={() => {
-                  formRef.current?.submitForm();
-                }}
-              >
-                Entrar
-              </Button>
-            </Form>
+                  <Button
+                    onPress={() => {
+                      formRef.current?.submitForm();
+                    }}
+                  >
+                    Entrar
+                  </Button>
+                </Form>
+              </>
+            )}
 
             <ForgotPassword onPress={() => {}}>
               <ForgotPasswordText>Esqueci minha senha</ForgotPasswordText>
