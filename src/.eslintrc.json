@@ -24,6 +24,7 @@
   },
   "plugins": ["react", "react-hooks", "@typescript-eslint", "prettier"],
   "rules": {
+    "import/no-duplicates": "off",
     "react/jsx-props-no-spreading": "off",
     "@typescript-eslint/camelcase": "off",
     "no-unused-expressions": "off",
